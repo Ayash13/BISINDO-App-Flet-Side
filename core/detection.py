@@ -146,7 +146,7 @@ def start_inference(stop_flag, model_ready, virtual_cam, camera_placeholder, cam
         # Responsive subtitle settings
         text_size = max(0.4, W / 1200)
         text_thickness = max(1, int(text_size * 2))
-        margin_bottom = int(H * 0.05) 
+        margin_bottom = int(H * 0.15) 
         padding = int(W * 0.02)        
         radius = int(padding * 0.8)   
         

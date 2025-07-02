@@ -86,25 +86,23 @@ def InstalasiPage(page: ft.Page):
                 obs_status_label.value = saved_status.get("obs_status", "Status OBS Studio akan muncul di sini.")
                 obs_status_label.color = saved_status.get("obs_color", "#AAAAAA")
                 
-                status_text.value = "Klik untuk memeriksa ulang."
+                status_text.value = "Status tersimpan. Klik untuk memeriksa ulang."
                 
                 all_deps_installed = all(item["checkbox"].value for item in dependency_status)
-                if all_deps_installed and "Terdeteksi" in obs_status_label.value:
-                    progress_bar.value = 1.0
-                else:
-                    progress_bar.value = 0.0
-
+                obs_ok = "Terdeteksi" in obs_status_label.value
+                progress_bar.value = 1.0 if all_deps_installed and obs_ok else 0.0
 
                 page.update()
         except Exception as e:
             print(f"Gagal memuat status instalasi: {e}")
 
     def get_module_name(library_name):
-        if 'opencv-python' in library_name:
+        name = library_name.split('==')[0].split('>')[0].split('<')[0].strip()
+        if 'opencv-python' in name:
             return 'cv2'
-        if 'scikit-learn' in library_name:
+        if 'scikit-learn' in name:
             return 'sklearn'
-        return library_name.split('==')[0].split('>')[0].split('<')[0]
+        return name
 
     def check_library_installed(library_name):
         module_name = get_module_name(library_name)
@@ -119,45 +117,34 @@ def InstalasiPage(page: ft.Page):
             if sys.platform == "win32":
                 import winreg
                 try:
-                    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\OBS Studio")
+                    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OBS Studio")
                     winreg.CloseKey(key)
                     return True
                 except FileNotFoundError:
-                    pass
-
-                possible_paths = [
-                    os.path.join(os.environ.get("ProgramFiles", "C:\\Program Files"), "obs-studio", "bin", "64bit", "obs64.exe"),
-                    os.path.join(os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)"), "obs-studio", "bin", "64bit", "obs64.exe")
-                ]
-                if any(os.path.exists(path) for path in possible_paths):
-                    return True
-                
-                try:
-                    result = subprocess.run("where obs64", shell=True, capture_output=True, text=True, check=False, timeout=10, creationflags=subprocess.CREATE_NO_WINDOW)
-                    return result.returncode == 0 and "obs64.exe" in result.stdout
-                except (subprocess.TimeoutExpired, FileNotFoundError):
-                    return False
+                    try:
+                        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\OBS Studio")
+                        winreg.CloseKey(key)
+                        return True
+                    except FileNotFoundError:
+                        return False
             else:
                 possible_paths = ["/Applications/OBS.app", "/Applications/OBS Studio.app"]
-                if any(os.path.exists(path) for path in possible_paths):
-                    return True
-                try:
-                    result = subprocess.run("which obs", shell=True, capture_output=True, text=True, check=False, timeout=10)
-                    return result.returncode == 0
-                except (subprocess.TimeoutExpired, FileNotFoundError):
-                    return False
-            return False
+                return any(os.path.exists(path) for path in possible_paths)
         except Exception as e:
+            print(f"Error checking OBS installation: {e}")
             return False
 
     def check_dependencies_thread():
         status_text.value = "🔍 Memeriksa instalasi..."
         progress_bar.value = 0
         page.update()
+        time.sleep(0.5)
 
         total_steps = len(dependencies) + 1
         current_step = 0
 
+        status_text.value = "🔍 Memeriksa pustaka Python..."
+        page.update()
         for dependency in dependency_status:
             is_installed = check_library_installed(dependency["name"])
             dependency["checkbox"].value = is_installed
@@ -167,6 +154,10 @@ def InstalasiPage(page: ft.Page):
             page.update()
             time.sleep(0.1)
         
+        status_text.value = "🔍 Memeriksa instalasi OBS Studio..."
+        page.update()
+        time.sleep(0.5)
+
         obs_installed = check_obs_installed()
         if obs_installed:
             obs_status_label.value = "📡 OBS Studio Terdeteksi! 🚀 Siap digunakan!"
@@ -174,7 +165,7 @@ def InstalasiPage(page: ft.Page):
         else:
             obs_status_label.value = "🚨 OBS Studio Tidak Ditemukan! 😢"
             obs_status_label.color = "#FF6B6B"
-        
+
         current_step += 1
         progress_bar.value = current_step / total_steps
         
@@ -247,7 +238,7 @@ def InstalasiPage(page: ft.Page):
                     spacing=100,
                     controls=[
                         step_item("🐍", "Environment"),
-                        step_item("📦", "Library"),
+                        step_item("�", "Library"),
                         step_item("🎥", "OBS"),
                     ]
                 ),
