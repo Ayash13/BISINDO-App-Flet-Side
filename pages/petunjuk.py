@@ -46,7 +46,7 @@ def PetunjukPage():
             "Posisikan tangan Anda di depan kamera. Aplikasi akan mendeteksi isyarat BISINDO dan menampilkannya."
         ),
         create_instruction_card(
-            "⭐",
+            "✍🏻",
             "Pembentukan Kalimat",
             "Aplikasi akan secara otomatis menampilkan hasil deteksi ke dalam box seperti subtitle."
         ),
