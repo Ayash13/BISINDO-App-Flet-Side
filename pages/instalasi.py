@@ -238,7 +238,7 @@ def InstalasiPage(page: ft.Page):
                     spacing=100,
                     controls=[
                         step_item("🐍", "Environment"),
-                        step_item("�", "Library"),
+                        step_item("📚", "Library"),
                         step_item("🎥", "OBS"),
                     ]
                 ),
