@@ -143,11 +143,12 @@ def start_inference(stop_flag, model_ready, virtual_cam, camera_placeholder, cam
         _, test_frame = cap.read()
         H, W, _ = test_frame.shape
         
+        # Responsive subtitle settings
         text_size = max(0.4, W / 1200)
         text_thickness = max(1, int(text_size * 2))
-        margin_bottom = int(H * 0.05)
-        padding = int(W * 0.02)
-        radius = int(padding * 0.8)
+        margin_bottom = int(H * 0.15) 
+        padding = int(W * 0.02)        
+        radius = int(padding * 0.8)   
         
         import mediapipe as mp
         hands = mp.solutions.hands.Hands(
@@ -191,15 +192,12 @@ def start_inference(stop_flag, model_ready, virtual_cam, camera_placeholder, cam
                     min_x, max_x = min(x_coords), max(x_coords)
                     min_y, max_y = min(y_coords), max(y_coords)
                     
-                    hand_width = max_x - min_x
                     hand_height = max_y - min_y
-                    
-                    scale_factor = max(hand_width, hand_height)
-                    if scale_factor == 0: scale_factor = 1e-6
+                    if hand_height == 0: hand_height = 1e-6
 
                     for i in range(len(x_coords)):
-                        normalized_x = (x_coords[i] - min_x) / scale_factor
-                        normalized_y = (y_coords[i] - min_y) / scale_factor
+                        normalized_x = (x_coords[i] - min_x) / hand_height
+                        normalized_y = (y_coords[i] - min_y) / hand_height
                         data_aux.append(normalized_x)
                         data_aux.append(normalized_y)
                 
